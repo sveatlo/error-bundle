@@ -1,1 +1,1 @@
-# go-errors-bundle
+# error-bundle
