@@ -13,20 +13,23 @@ type Bundle interface {
 }
 
 type errorsBundle struct {
-	errors          []error `json:"errors"`
-	StringFormatter ErrorsBundleFormatFunc
+	errors        []error
+	errorFormatFn ErrorsBundleFormatFunc
 }
 
 func NewErrorsBundle(errs ...error) Bundle {
 	bundle := &errorsBundle{
-		errors:          errs,
-		StringFormatter: defaultFormatter,
+		errors:        errs,
+		errorFormatFn: defaultFormatFn,
 	}
 
 	return bundle
 }
 
 func (b *errorsBundle) Append(e error) Bundle {
+	if e == nil {
+		return b
+	}
 	if b == nil {
 		return nil
 	}
@@ -78,7 +81,7 @@ func (b errorsBundle) Less(i, j int) bool {
 }
 
 func (b errorsBundle) Error() string {
-	return b.StringFormatter(&b)
+	return b.errorFormatFn(&b)
 }
 
 func (b *errorsBundle) MarshalJSON() ([]byte, error) {
@@ -92,7 +95,7 @@ func (b *errorsBundle) MarshalJSON() ([]byte, error) {
 
 type ErrorsBundleFormatFunc func(Bundle) string
 
-func defaultFormatter(b Bundle) string {
+func defaultFormatFn(b Bundle) string {
 	res := ""
 	delimiter := " █ "
 
